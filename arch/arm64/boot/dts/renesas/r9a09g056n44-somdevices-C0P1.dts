@@ -58,7 +58,7 @@
 		ethernet1 = &eth1;
 	};
 
-	backlight {
+	backlight: backlight {
 		compatible = "pwm-backlight";
 		pwms = <&gpt0 0 50000>;
 
@@ -91,6 +91,20 @@
 		device_type = "memory";
 		/* first 128MB is reserved for secure area. */
 		reg = <0x0 0x48000000 0x1 0xF8000000>;
+	};
+
+	panel: panel {
+		//Copied from mediatek/mt8173-elm.dtsi
+		compatible = "lg,lp120up1";
+		power-supply = <&reg_3p3v>;
+		ddc-i2c-bus = <&i2c8>;
+		backlight = <&backlight>;
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&ps8640_out>;
+			};
+		};
 	};
 
 	reserved-memory {
@@ -280,6 +294,12 @@
 			};
 		};
 	};
+
+	x1_clk: x1-clock {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <24000000>;
+	};
 };
 
 &audio_clka {
@@ -368,13 +388,11 @@
 	};
 
 	usb30_pins: usb30 {
-		pinmux = <RZG2L_PORT_PINMUX(6, 0, 14)>, /* VBUS */
-			 <RZG2L_PORT_PINMUX(6, 1, 14)>; /* OVC */
+		pinmux = <RZG2L_PORT_PINMUX(6, 0, 14)>; /* VBUS */
 	};
 
 	usb20_pins: usb20 {
-		pinmux = <RZG2L_PORT_PINMUX(9, 5, 14)>, /* VBUS */
-			 <RZG2L_PORT_PINMUX(9, 6, 14)>; /* OVC */
+		pinmux = <RZG2L_PORT_PINMUX(9, 5, 14)>; /* VBUS */
 	};
 
 	spi0_pins: spi0 {
@@ -452,10 +470,12 @@
 &dsi0 {
 	status = "okay";
 
-	port@1 {
-		mipi_dsi_out: endpoint {
-			remote-endpoint = <&dsi_lvds_bridge_in>;
-			attach-bridge;
+	ports {
+		port@1 {
+			dsi0_out: endpoint {
+				remote-endpoint = <&dsi_lvds_bridge_in>;
+				data-lanes = <1 2 3 4>;
+			};
 		};
 	};
 };
@@ -477,28 +497,6 @@
 	pinctrl-names = "default";
 
 	status = "okay";
-
-	ov5645_csi20: ov5645_csi20@3c {
-		compatible = "ovti,ov5645";
-		reg = <0x3c>;
-		clock-names = "xclk";
-		clocks = <&clk_ext_camera>;
-		clock-frequency = <24000000>;
-		vdddo-supply = <&ov5645_vdddo_1v8>;
-		vdda-supply = <&ov5645_vdda_2v8>;
-		vddd-supply = <&ov5645_vddd_1v5>;
-		/* Set dummy enable gpio */
-		enable-gpios = <&pinctrl RZG2L_GPIO(1, 6) GPIO_ACTIVE_HIGH>;
-		reset-gpios = <&pinctrl RZG2L_GPIO(6, 4) GPIO_ACTIVE_LOW>;
-
-		port {
-			ov5645_to_csi20: endpoint {
-				clock-lanes = <0>;
-				data-lanes = <1 2>;
-				remote-endpoint = <&csi20_in>;
-			};
-		};
-	};
 };
 
 &i2c1 {
@@ -506,28 +504,6 @@
 	pinctrl-names = "default";
 
 	status = "okay";
-
-	ov5645_csi21: ov5645_csi21@3c {
-		compatible = "ovti,ov5645";
-		reg = <0x3c>;
-		clock-names = "xclk";
-		clocks = <&clk_ext_camera>;
-		clock-frequency = <24000000>;
-		vdddo-supply = <&ov5645_vdddo_1v8>;
-		vdda-supply = <&ov5645_vdda_2v8>;
-		vddd-supply = <&ov5645_vddd_1v5>;
-		/* Set dummy enable gpio */
-		enable-gpios = <&pinctrl RZG2L_GPIO(1, 7) GPIO_ACTIVE_HIGH>;
-		reset-gpios = <&pinctrl RZG2L_GPIO(6, 5) GPIO_ACTIVE_LOW>;
-
-		port {
-			ov5645_to_csi21: endpoint {
-				clock-lanes = <0>;
-				data-lanes = <1 2>;
-				remote-endpoint = <&csi21_in>;
-			};
-		};
-	};
 };
 
 &i2c2 {
@@ -631,9 +607,22 @@
 			};
 		};
 
-		port {
-			dsi_lvds_bridge_in: endpoint {
-				remote-endpoint = <&mipi_dsi_out>;
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+				dsi_lvds_bridge_in: endpoint@0 {
+					remote-endpoint = <&dsi0_out>;
+				};
+			};
+
+			port@1 {
+				reg = <1>;
+				ps8640_out: endpoint@1 {
+					remote-endpoint = <&panel_in>;
+				};
 			};
 		};
 	};
@@ -759,10 +748,10 @@
 	mdio {
 		#address-cells = <1>;
 		#size-cells = <0>;
-		phy0: ethernet-phy@0 {
+		phy0: ethernet-phy@3 {
 			compatible = "ethernet-phy-id0022.1640",
 				     "ethernet-phy-ieee802.3-c22";
-			reg = <0>;
+			reg = <3>;
 			rxc-skew-psec = <1400>;
 			txc-skew-psec = <1400>;
 			rxdv-skew-psec = <0>;
@@ -782,15 +771,15 @@
 &eth1 {
 	phy-handle = <&phy1>;
 	phy-mode = "rgmii-id";
-	status = "okay";
+	status = "disabled";
 
 	mdio {
 		#address-cells = <1>;
 		#size-cells = <0>;
-		phy1: ethernet-phy@0 {
+		phy1: ethernet-phy@3 {
 			compatible = "ethernet-phy-id0022.1640",
 				     "ethernet-phy-ieee802.3-c22";
-			reg = <0>;
+			reg = <3>;
 			rxc-skew-psec = <1400>;
 			txc-skew-psec = <1400>;
 			rxdv-skew-psec = <0>;
@@ -850,16 +839,7 @@
 };
 
 &csi20 {
-	status = "okay";
-	ports {
-		port {
-			csi20_in: endpoint {
-				clock-lanes = <0>;
-				data-lanes = <1 2>;
-				remote-endpoint = <&ov5645_to_csi20>;
-			};
-		};
-	};
+	status = "disabled";
 };
 
 &cru1 {
@@ -867,17 +847,7 @@
 };
 
 &csi21 {
-	status = "okay";
-
-	ports {
-		port {
-			csi21_in: endpoint {
-				clock-lanes = <0>;
-				data-lanes = <1 2>;
-				remote-endpoint = <&ov5645_to_csi21>;
-			};
-		};
-	};
+	status = "disabled";
 };
 
 &wdt1 {
@@ -936,28 +906,28 @@
 	pinctrl-0 = <&sci0_pins>;
 	pinctrl-names = "default";
 	uart-has-rtscts;
-	status = "okay";
+	status = "disabled";
 };
 
 &sci2 {
 	pinctrl-0 = <&sci2_pins>;
 	pinctrl-names = "default";
 	uart-has-rtscts;
-	status = "okay";
+	status = "disabled";
 };
 
 &sci3 {
 	pinctrl-0 = <&sci3_pins>;
 	pinctrl-names = "default";
 	uart-has-rtscts;
-	status = "okay";
+	status = "disabled";
 };
 
 &sci4 {
 	pinctrl-0 = <&sci4_pins>;
 	pinctrl-names = "default";
 
-	status = "okay";
+	status = "disabled";
 };
 
 &rcar_sound {
