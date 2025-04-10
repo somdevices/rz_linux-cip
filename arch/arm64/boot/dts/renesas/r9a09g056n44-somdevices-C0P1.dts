@@ -40,17 +40,6 @@
  *	amixer set 'DVC In',0 100%
  */
 
-/* Select between CAN, SCI and SPDIF pins
- * COMMON_PIN_SEL value:
- *	0: CAN		is selected (default)
- *	1: SCI 		is selected
- *	2: SPDIF	is selected
- */
-#define COMMON_PIN_SEL		0
-#define CAN_SEL			0
-#define SCI_SEL			1
-#define SPDIF_SEL		2
-
 / {
 	model = "Renesas RZ/V2N µSMARC SOMDEVICES Board";
 	compatible = "renesas,r9a09g056n44-somdevices", "renesas,r9a09g056n44", "renesas,r9a09g056";
@@ -58,12 +47,10 @@
 	aliases {
 		serial0 = &scif0;
 		serial1 = &sci0;
-#if (COMMON_PIN_SEL == SCI_SEL)
 		serial2 = &sci4;
 		serial3 = &sci5;
 		serial4 = &sci8;
 		serial5 = &sci9;
-#endif
 		mmc0 = &sdhi0;
 		mmc1 = &sdhi1;
 		mmc2 = &sdhi2;
@@ -251,7 +238,6 @@
 		clock-frequency = <24000000>;
 	};
 
-#if (COMMON_PIN_SEL == SPDIF_SEL)
 	codec_test0: codec_test {
 		compatible = "linux,snd-soc-dummy";
 		#sound-dai-cells = <0>;
@@ -261,7 +247,6 @@
 		compatible = "linux,snd-soc-dummy";
 		#sound-dai-cells = <0>;
 	};
-#endif
 
 	snd_rzv2n: sound {
 		#address-cells = <1>;
@@ -286,36 +271,6 @@
 				clocks = <&rcar_sound>;
 			};
 		};
-
-#if (COMMON_PIN_SEL == SPDIF_SEL)
-		spdif_link0: simple-audio-card,dai-link@1 {
-			reg = <1>;
-			bitclock-master = <&cpu_dai1>;
-			frame-master = <&cpu_dai1>;
-
-			cpu_dai1: cpu {
-				sound-dai = <&rcar_sound 1>;
-			};
-
-			codec {
-				sound-dai = <&codec_test0>;
-			};
-		};
-
-		spdif_link1: simple-audio-card,dai-link@2 {
-			reg = <1>;
-			bitclock-master = <&cpu_dai2>;
-			frame-master = <&cpu_dai2>;
-
-			cpu_dai2: cpu {
-				sound-dai = <&rcar_sound 2>;
-			};
-
-			codec {
-				sound-dai = <&codec_test1>;
-			};
-		};
-#endif
 	};
 };
 
@@ -426,7 +381,6 @@
 		line-name = "cam0_pwr_en";
 	};
 
-#if (COMMON_PIN_SEL == CAN_SEL)
 	/* Support pinctrl for CANFD */
 	can0_pins: can0 {
 		pinmux = <RZG2L_PORT_PINMUX(8, 0, 5)>, /* CAN1_TX */
@@ -437,7 +391,6 @@
 		pinmux = <RZG2L_PORT_PINMUX(8, 2, 5)>, /* CAN2_TX */
 			 <RZG2L_PORT_PINMUX(8, 3, 5)>; /* CAN2_RX */
 	};
-#endif
 
 	sci0_pins: sci0 {
 		pinmux = <RZG2L_PORT_PINMUX(5, 0, 1)>, /* UART0_TXD */
@@ -446,7 +399,6 @@
 			 <RZG2L_PORT_PINMUX(5, 3, 2)>; /* UART0_RTS */
 	};
 
-#if (COMMON_PIN_SEL == SCI_SEL)
 	sci2_pins: sci2 {
 		pinmux = <RZG2L_PORT_PINMUX(5, 4, 1)>, /* UART2_BT_TXD */
 			 <RZG2L_PORT_PINMUX(5, 5, 1)>, /* UART2_BT_RXD */
@@ -465,17 +417,6 @@
 		pinmux = <RZG2L_PORT_PINMUX(8, 4, 6)>, /* UART4_TXD */
 			 <RZG2L_PORT_PINMUX(8, 5, 6)>; /* UART4_RXD */
 	};
-#elif (COMMON_PIN_SEL == SPDIF_SEL)
-	spdif0_pins: spdif0 {
-		pinmux = <RZG2L_PORT_PINMUX(8, 0, 8)>, /* SPDIF0_OUT */
-			 <RZG2L_PORT_PINMUX(8, 1, 8)>; /* SPDIF0_IN */
-	};
-
-	spdif2_pins: spdif2 {
-		pinmux = <RZG2L_PORT_PINMUX(8, 2, 8)>, /* SPDIF2_OUT */
-			 <RZG2L_PORT_PINMUX(8, 3, 8)>; /* SPDIF2_IN */
-	};
-#endif
 
 	sound_clk_pins: sound_clk {
 		pinmux = <RZG2L_PORT_PINMUX(1, 0, 7)>, /* AUDIO_CLKB */
@@ -891,7 +832,6 @@
 	status = "okay";
 };
 
-#if (COMMON_PIN_SEL == CAN_SEL)
 &canfd {
 	pinctrl-0 = <&can0_pins &can1_pins>;
 	pinctrl-names = "default";
@@ -905,7 +845,6 @@
 		status = "okay";
 	};
 };
-#endif
 
 &sci0 {
 	pinctrl-0 = <&sci0_pins>;
@@ -914,7 +853,6 @@
 	status = "okay";
 };
 
-#if (COMMON_PIN_SEL == SCI_SEL)
 &sci2 {
 	pinctrl-0 = <&sci2_pins>;
 	pinctrl-names = "default";
@@ -935,14 +873,9 @@
 
 	status = "okay";
 };
-#endif
 
 &rcar_sound {
-#if (COMMON_PIN_SEL == SPDIF_SEL)
-	pinctrl-0 = <&sound_clk_pins &sound_pins &spdif0_pins &spdif2_pins>;
-#else
 	pinctrl-0 = <&sound_clk_pins &sound_pins>;
-#endif
 	pinctrl-names = "default";
 
 	status = "okay";
@@ -959,18 +892,6 @@
 			playback = <&ssi3>;
 			capture  = <&ssi4 &src0 &dvc0>;
 		};
-
-#if (COMMON_PIN_SEL == SPDIF_SEL)
-		dai1 {
-			playback = <&spdif0>;
-			capture  = <&spdif0>;
-		};
-
-		dai2 {
-			playback = <&spdif2>;
-			capture  = <&spdif2>;
-		};
-#endif
 	};
 };
 
