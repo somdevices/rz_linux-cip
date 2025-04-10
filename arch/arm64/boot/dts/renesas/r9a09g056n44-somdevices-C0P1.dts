@@ -58,6 +58,14 @@
 		ethernet1 = &eth1;
 	};
 
+	backlight {
+		compatible = "pwm-backlight";
+		pwms = <&gpt0 0 50000>;
+
+		brightness-levels = <0 4 8 16 32 64 128 255>;
+		default-brightness-level = <6>;
+	};
+
 	chosen {
 		bootargs = "ignore_loglevel";
 		stdout-path = "serial0:115200n8";
@@ -288,6 +296,10 @@
 
 &pinctrl {
 
+	gpt_pins: gpt {
+		pinmux = <RZG2L_PORT_PINMUX(10, 7, 11)>; /* GTIOC7B */
+	};
+
 	i2c0_pins: i2c0 {
 		pinmux = <RZG2L_PORT_PINMUX(3, 0, 1)>, /* I2C0_SDA */
 			 <RZG2L_PORT_PINMUX(3, 1, 1)>; /* I2C0_SCL */
@@ -439,10 +451,25 @@
 
 &dsi0 {
 	status = "okay";
+
+	port@1 {
+		mipi_dsi_out: endpoint {
+			remote-endpoint = <&dsi_lvds_bridge_in>;
+			attach-bridge;
+		};
+	};
 };
 
 &extal_clk {
 	clock-frequency = <24000000>;
+};
+
+&gpt0 {
+	pinctrl-0 = <&gpt_pins>;
+	pinctrl-names = "default";
+	channel = "channel_B";
+	/* TODO gpt: Add correct support */
+	status = "disabled";
 };
 
 &i2c0 {
@@ -571,6 +598,44 @@
 					<24578000>, <24000000>;
 		clock-divider-read-only = <1>, <1>, <1>, <1>, <1>;
 		clock-flags = <2176>, <2176>, <2176>, <2052>, <2176>, <2048>;
+	};
+
+	dsi_lvds_bridge: sn65dsi84@2c {
+		compatible = "ti,sn65dsi83";
+		reg = <0x2c>;
+		ti,dsi-lanes = <4>;
+		ti,lvds-format = <2>;
+		ti,lvds-bpp = <24>;
+		ti,lvds-channels = <1>;
+		ti,width-mm = <154>;
+		ti,height-mm = <87>;
+		enable-gpios = <&pinctrl RZG2L_GPIO(1, 0) GPIO_ACTIVE_HIGH>;
+		status = "okay";
+
+		display-timings {
+			lvds {
+				clock-frequency = <51200000>;
+				hactive = <1024>;
+				vactive = <600>;
+				hfront-porch = <120>;
+				hsync-len = <20>;
+				hback-porch = <140>;
+				vfront-porch = <12>;
+				vsync-len = <3>;
+				vback-porch = <20>;
+
+				hsync-active = <0>;
+				vsync-active = <0>;
+				de-active = <1>;
+				pixelclk-active = <0>;
+			};
+		};
+
+		port {
+			dsi_lvds_bridge_in: endpoint {
+				remote-endpoint = <&mipi_dsi_out>;
+			};
+		};
 	};
 };
 
