@@ -547,6 +547,20 @@
 	pinctrl-names = "default";
 
 	status = "okay";
+	//GPIO9  -> RST
+	//GPIO10 -> INT
+	touchscreen: touch@38 {
+		compatible = "zettler-ft5426";
+		reg = <0x38>;
+		//interrupt-parent = <&gpio3>;
+		//interrupts = <19 IRQ_TYPE_EDGE_RISING>;
+		//irq-gpios = <&gpio3 19 IRQ_TYPE_EDGE_RISING>;
+		//reset-gpios = <&gpio4 30 GPIO_ACTIVE_LOW>;
+		interrupt-parent = <&pinctrl>;
+		interrupts = <RZG2L_GPIO(7, 4) IRQ_TYPE_EDGE_RISING>;
+		irq-gpios = <&pinctrl RZG2L_GPIO(7, 4) IRQ_TYPE_EDGE_RISING>;
+		reset-gpios = <&pinctrl RZG2L_GPIO(7, 3) GPIO_ACTIVE_LOW>;
+	};
 };
 
 &i2c8 {
