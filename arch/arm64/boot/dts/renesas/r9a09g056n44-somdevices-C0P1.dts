@@ -52,8 +52,8 @@
 #define SPDIF_SEL		2
 
 / {
-	model = "Renesas EVK based on r9a09g056n44";
-	compatible = "renesas,r9a09g056n44-evk", "renesas,r9a09g056n44", "renesas,r9a09g056";
+	model = "Renesas RZ/V2N µSMARC SOMDEVICES Board";
+	compatible = "renesas,r9a09g056n44-somdevices", "renesas,r9a09g056n44", "renesas,r9a09g056";
 
 	aliases {
 		serial0 = &scif0;
@@ -350,8 +350,8 @@
 	};
 
 	usb30_pins: usb30 {
-		pinmux = <RZG2L_PORT_PINMUX(11, 0, 14)>, /* VBUS */
-			 <RZG2L_PORT_PINMUX(11, 1, 14)>; /* OVC */
+		pinmux = <RZG2L_PORT_PINMUX(6, 0, 14)>, /* VBUS */
+			 <RZG2L_PORT_PINMUX(6, 1, 14)>; /* OVC */
 	};
 
 	usb20_pins: usb20 {
@@ -359,11 +359,12 @@
 			 <RZG2L_PORT_PINMUX(9, 6, 14)>; /* OVC */
 	};
 
-	spi2_pins: spi2 {
-		pinmux = <RZG2L_PORT_PINMUX(11, 3, 5)>, /* MISO */
-			 <RZG2L_PORT_PINMUX(11, 4, 5)>, /* MOSI */
-			 <RZG2L_PORT_PINMUX(10, 7, 5)>, /* SSL */
-			 <RZG2L_PORT_PINMUX(11, 5, 5)>; /* RSPCK */
+	spi0_pins: spi0 {
+		pinmux = <RZG2L_PORT_PINMUX(9, 1, 1)>, /* MISO */
+			 <RZG2L_PORT_PINMUX(9, 0, 1)>, /* MOSI */
+			 <RZG2L_PORT_PINMUX(9, 3, 1)>, /* SSL0 */
+			 <RZG2L_PORT_PINMUX(9, 2, 1)>, /* RSPCK */
+			 <RZG2L_PORT_PINMUX(0, 5, 2)>; /* SSL1 */
 	};
 
 	/* cam0_pwr_en is used by Google Coral Camera from CSI20 and CSI21 */
@@ -797,8 +798,8 @@
 	status = "okay";
 };
 
-&spi2 {
-	pinctrl-0 = <&spi2_pins>;
+&spi0 {
+	pinctrl-0 = <&spi0_pins>;
 	pinctrl-names = "default";
 
 	status = "okay";
