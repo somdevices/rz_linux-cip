@@ -326,9 +326,9 @@ static void rzg2l_cru_initialize_axi(struct rzg2l_cru_dev *cru)
 	for (slot = 0; slot < cru->num_buf; slot++)
 		rzg2l_cru_fill_hw_slot(cru, slot);
 
-	/* Set AXI burst max length to recommended setting */
+	/* Set AXI burst max length for e-CAM22_CURZH */
 	reg = rzg2l_cru_read(cru, AMnAXIATTR) & ~AMnAXIATTR_AXILEN;
-	rzg2l_cru_write(cru, AMnAXIATTR, reg | 0xF);
+	rzg2l_cru_write(cru, AMnAXIATTR, reg | 0x6);
 }
 
 static void rzg2l_cru_csi2_setup(struct rzg2l_cru_dev *cru, bool *input_is_yuv,
@@ -787,20 +787,6 @@ static irqreturn_t rzv2h_cru_irq(int irq, void *data)
 
 		dev_dbg(cru->dev, "Capture start synced!\n");
 		cru->state = RZG2L_CRU_DMA_RUNNING;
-	}
-
-	if (slot != prev_slot[cru->id]) {
-		/* Update value of previous memory bank slot */
-		prev_slot[cru->id] = slot;
-	} else {
-		/*
-		 * AXI-Bus congestion maybe occurred.
-		 * Set auto recovery mode to clear all FIFOs
-		 * and resume transmission.
-		 */
-		rzg2l_cru_write(cru, AMnFIFO, 0);
-
-		dev_dbg(cru->dev, "Dropping frame %u with CRU channel\n", cru->sequence);
 	}
 
 	/* Capture frame */
