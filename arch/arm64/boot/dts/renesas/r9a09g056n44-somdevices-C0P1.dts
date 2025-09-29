@@ -15,7 +15,7 @@
 	compatible = "renesas,r9a09g056n44-somdevices", "renesas,r9a09g056n44", "renesas,r9a09g056";
 
 	aliases {
-		serial0 = &scif0;
+		serial0 = &scif;
 		serial1 = &sci0;
 		serial2 = &sci4;
 		serial3 = &sci5;
@@ -30,7 +30,7 @@
 
 	backlight: backlight {
 		compatible = "pwm-backlight";
-		pwms = <&gpt0 0 50000>;
+		pwms = <&gpt0_0 0 50000>;
 
 		brightness-levels = <0 4 8 16 32 64 128 255>;
 		default-brightness-level = <6>;
@@ -245,7 +245,7 @@
 			 <RZG2L_PORT_PINMUX(0, 7, 1)>; /* I2C8_SCL */
 	};
 
-	scif0_pins: scif0 {
+	scif_pins: scif {
 		pins =  "SCIF_RXD", "SCIF_TXD";
 	};
 
@@ -364,11 +364,11 @@
 	};
 };
 
-&extal_clk {
+&qextal_clk {
 	clock-frequency = <24000000>;
 };
 
-&gpt0 {
+&gpt0_0 {
 	pinctrl-0 = <&gpt_pins>;
 	pinctrl-names = "default";
 	channel = "channel_B";
@@ -523,8 +523,8 @@
 	status = "okay";
 };
 
-&scif0 {
-	pinctrl-0 = <&scif0_pins>;
+&scif {
+	pinctrl-0 = <&scif_pins>;
 	pinctrl-names = "default";
 
 	status = "okay";
@@ -608,13 +608,13 @@
 			#address-cells = <1>;
 			#size-cells = <1>;
 
-			partition@000000 {
+			partition@0 {
 				label = "bl2";
 				reg = <0x00000000 0x0001D200>;
 				read-only;
 			};
 
-			partition@01D200 {
+			partition@1D200 {
 				label = "fip";
 				reg = <0x0001D200 0x001C2E00>;
 				read-only;
