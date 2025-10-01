@@ -603,11 +603,11 @@ static int sn65dsi83_parse_dt(struct sn65dsi83 *ctx, enum sn65dsi83_model model)
 			ctx->lvds_dual_link_even_odd_swap = true;
 		}
 	}
-
+	printk("JOC panel_bridge");
 	panel_bridge = devm_drm_of_get_bridge(dev, dev->of_node, 2, 0);
 	if (IS_ERR(panel_bridge))
 		return PTR_ERR(panel_bridge);
-
+	printk("JOC panel_bridge loaded!!!");
 	ctx->panel_bridge = panel_bridge;
 
 	ctx->vcc = devm_regulator_get(dev, "vcc");
@@ -674,7 +674,7 @@ static int sn65dsi83_probe(struct i2c_client *client,
 	enum sn65dsi83_model model;
 	struct sn65dsi83 *ctx;
 	int ret;
-
+	printk("JOC!!!!");
 	ctx = devm_kzalloc(dev, sizeof(*ctx), GFP_KERNEL);
 	if (!ctx)
 		return -ENOMEM;
@@ -695,11 +695,11 @@ static int sn65dsi83_probe(struct i2c_client *client,
 		return dev_err_probe(dev, PTR_ERR(ctx->enable_gpio), "failed to get enable GPIO\n");
 
 	usleep_range(10000, 11000);
-
+	printk("JOC2!!!!");
 	ret = sn65dsi83_parse_dt(ctx, model);
 	if (ret)
 		return ret;
-
+	printk("JOC3!!!!");
 	ctx->regmap = devm_regmap_init_i2c(client, &sn65dsi83_regmap_config);
 	if (IS_ERR(ctx->regmap))
 		return dev_err_probe(dev, PTR_ERR(ctx->regmap), "failed to get regmap\n");
@@ -715,7 +715,7 @@ static int sn65dsi83_probe(struct i2c_client *client,
 	ret = sn65dsi83_host_attach(ctx);
 	if (ret)
 		goto err_remove_bridge;
-
+	printk("JOC FINAL!!!!");
 	return 0;
 
 err_remove_bridge:
