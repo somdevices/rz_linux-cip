@@ -1269,13 +1269,11 @@ static int zettler_ft5426_ts_probe(struct i2c_client *client,
 	return 0;
 }
 
-static int zettler_ft5426_ts_remove(struct i2c_client *client)
+static void zettler_ft5426_ts_remove(struct i2c_client *client)
 {
 	struct zettler_ft5426_ts_data *tsdata = i2c_get_clientdata(client);
 
 	zettler_ft5426_ts_teardown_debugfs(tsdata);
-
-	return 0;
 }
 
 static int __maybe_unused zettler_ft5426_ts_suspend(struct device *dev)
