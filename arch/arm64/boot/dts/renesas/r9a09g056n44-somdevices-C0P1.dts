@@ -63,7 +63,7 @@
 		reg = <0x0 0x48000000 0x0 0x78000000>;
 	};
 
-	panel: panel {
+	/*panel: panel {
 		//Copied from mediatek/mt8173-elm.dtsi
 		compatible = "lg,lp120up1";
 		power-supply = <&reg_3p3v>;
@@ -75,6 +75,55 @@
 				remote-endpoint = <&ps8640_out>;
 			};
 		};
+	};*/
+	//panel {
+	panel_lvds: panel-lvds {
+		//compatible = "yes-optoelectronics,ytc700tlag-05-201c";
+		compatible = "panel-lvds";
+		status = "okay";
+		//backlight = <&backlight>;
+		power-supply = <&reg_3p3v>;
+		width-mm = <154>;
+		height-mm = <87>;
+		data-mapping = "vesa-24";
+
+		//display-timings {
+		panel-timing {
+			//lvds {
+				clock-frequency = <51200000>;
+				hactive = <1024>;
+				vactive = <600>;
+				hfront-porch = <120>;
+				hsync-len = <20>;
+				hback-porch = <140>;
+				vfront-porch = <12>;
+				vsync-len = <3>;
+				vback-porch = <20>;
+
+				hsync-active = <0>;
+				vsync-active = <0>;
+				de-active = <1>;
+				pixelclk-active = <0>;
+			//};
+		};
+
+		port {
+			panel_out_bridge: endpoint {
+				remote-endpoint = <&bridge_out_panel>;
+			};
+		};
+
+		/*ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+				panel_out_bridge: endpoint {
+					remote-endpoint = <&bridge_out_panel>;
+				};
+			};
+		};*/
 	};
 
 	reserved-memory {
@@ -356,9 +405,10 @@
 
 	ports {
 		port@1 {
-			dsi0_out: endpoint {
+			mipi_dsi_out: endpoint {
 				remote-endpoint = <&dsi_lvds_bridge_in>;
 				data-lanes = <1 2 3 4>;
+				//attach-bridge; //DOUBT JOC!
 			};
 		};
 	};
@@ -373,7 +423,7 @@
 	pinctrl-names = "default";
 	channel = "channel_B";
 	/* TODO gpt: Add correct support */
-	status = "disabled";
+	status = "okay";
 };
 
 &i2c0 {
@@ -430,43 +480,22 @@
 		enable-gpios = <&pinctrl RZG2L_GPIO(1, 0) GPIO_ACTIVE_HIGH>;
 		status = "okay";
 
-		display-timings {
-			lvds {
-				clock-frequency = <51200000>;
-				hactive = <1024>;
-				vactive = <600>;
-				hfront-porch = <120>;
-				hsync-len = <20>;
-				hback-porch = <140>;
-				vfront-porch = <12>;
-				vsync-len = <3>;
-				vback-porch = <20>;
-
-				hsync-active = <0>;
-				vsync-active = <0>;
-				de-active = <1>;
-				pixelclk-active = <0>;
-			};
-		};
-
 		ports {
 			#address-cells = <1>;
 			#size-cells = <0>;
 
 			port@0 {
 				reg = <0>;
-
-				dsi_lvds_bridge_in: endpoint@0 {
-					remote-endpoint = <&dsi0_out>;
+				dsi_lvds_bridge_in: endpoint {
+					remote-endpoint = <&mipi_dsi_out>;
 					data-lanes = <1 2 3 4>;
 				};
 			};
 
 			port@2 {
 				reg = <2>;
-
-				ps8640_out: endpoint@1 {
-					remote-endpoint = <&panel_in>;
+				bridge_out_panel: endpoint {
+					remote-endpoint = <&panel_out_bridge>;
 				};
 			};
 		};
