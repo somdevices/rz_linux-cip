@@ -39,6 +39,7 @@
 
 /* PHY IDs */
 #define PHY_ID_MXL86110		0xC1335580
+#define PHY_ID_MXL86110M	0x4F51E91B
 #define PHY_ID_MXL86111		0xC1335588
 
 /* required to access extended registers */
@@ -221,18 +222,16 @@
 			MXL8611X_EXT_RGMII_CFG1_TX_10MB_100MB_DEFAULT
 
 /* Adjust default LED settings */
-#define MXL8611X_LED0_CFG_CUSTOM		(MXL8611X_LEDX_CFG_LINK_UP_TX_ACT_ON | \
+#define MXL8611X_LED0_CFG_CUSTOM		(MXL8611X_LEDX_CFG_TRAFFIC_ACT_BLINK_IND | \
+										MXL8611X_LEDX_CFG_LINK_UP_TX_ACT_ON | \
 										MXL8611X_LEDX_CFG_LINK_UP_RX_ACT_ON | \
-										MXL8611X_LEDX_CFG_LINK_UP_10MB_ON)
-#define MXL8611X_LED1_CFG_CUSTOM		(MXL8611X_LEDX_CFG_LINK_UP_TX_ACT_ON | \
-										MXL8611X_LEDX_CFG_LINK_UP_RX_ACT_ON | \
-										MXL8611X_LEDX_CFG_LINK_UP_100MB_ON)
-#define MXL8611X_LED2_CFG_CUSTOM		(MXL8611X_LEDX_CFG_LINK_UP_TX_ACT_ON | \
-										MXL8611X_LEDX_CFG_LINK_UP_RX_ACT_ON | \
+										MXL8611X_LEDX_CFG_LINK_UP_10MB_ON | \
+										MXL8611X_LEDX_CFG_LINK_UP_100MB_ON | \
 										MXL8611X_LEDX_CFG_LINK_UP_1GB_ON)
-#define MXL8611X_LED_BLINK_CFG_CUSTOM	(MXL8611X_LED_BLINK_CFG_FREQ_MODE1_8HZ | \
-										MXL8611X_LED_BLINK_CFG_FREQ_MODE2_4HZ | \
-										MXL8611X_LED_BLINK_CFG_DUTY_CYCLE_50_PERC_ON)
+#define MXL8611X_LED1_CFG_CUSTOM		MXL8611X_LEDX_CFG_LINK_UP_100MB_ON
+#define MXL8611X_LED2_CFG_CUSTOM		MXL8611X_LEDX_CFG_LINK_UP_1GB_ON
+#define MXL8611X_LED_BLINK_CFG_CUSTOM	(MXL8611X_LED_BLINK_CFG_FREQ_MODE2_16HZ | \
+										MXL8611X_LED_BLINK_CFG_DUTY_CYCLE_33_PERC_ON)
 
 /* ******************************************************** */
 /* Customer specific configuration END						*/
@@ -2020,6 +2019,20 @@ static struct phy_driver mxl_phy_drvs[] = {
 		.resume			= genphy_resume,
 	},
 	{
+		PHY_ID_MATCH_EXACT(PHY_ID_MXL86110M),
+		.name			= "MXL86110M Gigabit Ethernet",
+		.probe			= mxl86110_probe,
+		.config_init	= mxl86110_config_init,
+		.config_aneg	= genphy_config_aneg,
+		.read_page		= mxl86110_read_page,
+		.write_page		= mxl86110_write_page,
+		.read_status	= genphy_read_status,
+		.get_wol		= mxlphy_get_wol,
+		.set_wol		= mxlphy_set_wol,
+		.suspend		= genphy_suspend,
+		.resume			= genphy_resume,
+	},
+	{
 		PHY_ID_MATCH_EXACT(PHY_ID_MXL86111),
 		.name			= "MXL86111 Gigabit Ethernet",
 		.get_features	= mxl86111_get_features,
@@ -2046,6 +2059,7 @@ MODULE_LICENSE("GPL");
 
 static const struct mdio_device_id __maybe_unused mxl_tbl[] = {
 	{ PHY_ID_MATCH_EXACT(PHY_ID_MXL86110) },
+	{ PHY_ID_MATCH_EXACT(PHY_ID_MXL86110M) },
 	{ PHY_ID_MATCH_EXACT(PHY_ID_MXL86111) },
 	{  }
 };
