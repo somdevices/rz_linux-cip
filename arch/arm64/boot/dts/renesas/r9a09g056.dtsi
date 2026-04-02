@@ -2567,6 +2567,19 @@
 			reset-names = "presetn", "tresetn";
 			status = "disabled";
 		};
+
+		drpai0: drpai@16800000 {
+			compatible = "renesas,rzv2n-drpai";
+			reg = <0 0x17000000 0 0x1000000>,
+				<0 0x16800000 0 0x400000>;
+			interrupts = <GIC_SPI 914 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 915 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 916 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 917 IRQ_TYPE_LEVEL_HIGH>;
+			//resets = <&cpg R9A09G056_DRPAI_ARESETN>;
+			resets = <&cpg 253>;
+			status = "disabled";
+		};
 	};
 
 	thermal-zones {

@@ -1094,3 +1094,9 @@
 
 };
 #endif
+
+&drpai0 {
+	memory-region = <&drp_reserved>;
+	memory-shared-for-drpai-ext-cont = <&shared_drp_reserved>;
+	status = "okay";
+};
