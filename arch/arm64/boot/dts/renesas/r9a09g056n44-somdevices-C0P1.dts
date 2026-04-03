@@ -30,7 +30,7 @@
 
 	backlight: backlight {
 		compatible = "pwm-backlight";
-		pwms = <&gpt0_0 0 50000>;
+		pwms = <&gpt0_7 0 50000>;
 
 		brightness-levels = <0 4 8 16 32 64 128 255>;
 		default-brightness-level = <6>;
@@ -63,48 +63,30 @@
 		reg = <0x0 0x48000000 0x0 0x78000000>;
 	};
 
-	/*panel: panel {
-		//Copied from mediatek/mt8173-elm.dtsi
-		compatible = "lg,lp120up1";
-		power-supply = <&reg_3p3v>;
-		ddc-i2c-bus = <&i2c8>;
-		backlight = <&backlight>;
-
-		port {
-			panel_in: endpoint {
-				remote-endpoint = <&ps8640_out>;
-			};
-		};
-	};*/
-	//panel {
 	panel_lvds: panel-lvds {
-		//compatible = "yes-optoelectronics,ytc700tlag-05-201c";
 		compatible = "panel-lvds";
 		status = "okay";
-		//backlight = <&backlight>;
+		backlight = <&backlight>;
 		power-supply = <&reg_3p3v>;
 		width-mm = <154>;
 		height-mm = <87>;
 		data-mapping = "vesa-24";
 
-		//display-timings {
 		panel-timing {
-			//lvds {
-				clock-frequency = <51200000>;
-				hactive = <1024>;
-				vactive = <600>;
-				hfront-porch = <120>;
-				hsync-len = <20>;
-				hback-porch = <140>;
-				vfront-porch = <12>;
-				vsync-len = <3>;
-				vback-porch = <20>;
+			clock-frequency = <51200000>;
+			hactive = <1024>;
+			vactive = <600>;
+			hfront-porch = <120>;
+			hsync-len = <20>;
+			hback-porch = <140>;
+			vfront-porch = <12>;
+			vsync-len = <3>;
+			vback-porch = <20>;
 
-				hsync-active = <0>;
-				vsync-active = <0>;
-				de-active = <1>;
-				pixelclk-active = <0>;
-			//};
+			hsync-active = <0>;
+			vsync-active = <0>;
+			de-active = <1>;
+			pixelclk-active = <0>;
 		};
 
 		port {
@@ -112,18 +94,6 @@
 				remote-endpoint = <&bridge_out_panel>;
 			};
 		};
-
-		/*ports {
-			#address-cells = <1>;
-			#size-cells = <0>;
-
-			port@0 {
-				reg = <0>;
-				panel_out_bridge: endpoint {
-					remote-endpoint = <&bridge_out_panel>;
-				};
-			};
-		};*/
 	};
 
 	reserved-memory {
@@ -408,7 +378,6 @@
 			mipi_dsi_out: endpoint {
 				remote-endpoint = <&dsi_lvds_bridge_in>;
 				data-lanes = <1 2 3 4>;
-				//attach-bridge; //DOUBT JOC!
 			};
 		};
 	};
@@ -418,7 +387,7 @@
 	clock-frequency = <24000000>;
 };
 
-&gpt0_0 {
+&gpt0_7 {
 	pinctrl-0 = <&gpt_pins>;
 	pinctrl-names = "default";
 	channel = "channel_B";
@@ -478,6 +447,7 @@
 		compatible = "ti,sn65dsi84";
 		reg = <0x2c>;
 		enable-gpios = <&pinctrl RZG2L_GPIO(1, 0) GPIO_ACTIVE_HIGH>;
+		vcc-supply = <&reg_1p8v>;
 		status = "okay";
 
 		ports {

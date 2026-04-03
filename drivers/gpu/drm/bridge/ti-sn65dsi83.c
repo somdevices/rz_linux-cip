@@ -333,7 +333,6 @@ static void sn65dsi83_atomic_pre_enable(struct drm_bridge *bridge,
 	struct drm_crtc *crtc;
 	bool lvds_format_24bpp;
 	bool lvds_format_jeida;
-	unsigned int pval;
 	__le16 le16val;
 	u16 val;
 	int ret;
@@ -468,19 +467,6 @@ static void sn65dsi83_atomic_pre_enable(struct drm_bridge *bridge,
 		     mode->vsync_start - mode->vdisplay);
 	regmap_write(ctx->regmap, REG_VID_CHA_TEST_PATTERN, 0x00);
 
-	/* Enable PLL */
-	regmap_write(ctx->regmap, REG_RC_PLL_EN, REG_RC_PLL_EN_PLL_EN);
-	usleep_range(3000, 4000);
-	ret = regmap_read_poll_timeout(ctx->regmap, REG_RC_LVDS_PLL, pval,
-				       pval & REG_RC_LVDS_PLL_PLL_EN_STAT,
-				       1000, 100000);
-	if (ret) {
-		dev_err(ctx->dev, "failed to lock PLL, ret=%i\n", ret);
-		/* On failure, disable PLL again and exit. */
-		regmap_write(ctx->regmap, REG_RC_PLL_EN, 0x00);
-		return;
-	}
-
 	/* Trigger reset after CSR register update. */
 	regmap_write(ctx->regmap, REG_RC_RESET, REG_RC_RESET_SOFT_RESET);
 
@@ -493,6 +479,21 @@ static void sn65dsi83_atomic_enable(struct drm_bridge *bridge,
 {
 	struct sn65dsi83 *ctx = bridge_to_sn65dsi83(bridge);
 	unsigned int pval;
+	int ret;
+
+	/* Enable PLL */
+	//https://community.nxp.com/t5/i-MX-Processors/L6-6-sn65dsi83-Error/m-p/2075981#M236053
+	regmap_write(ctx->regmap, REG_RC_PLL_EN, REG_RC_PLL_EN_PLL_EN);
+	usleep_range(3000, 4000);
+	ret = regmap_read_poll_timeout(ctx->regmap, REG_RC_LVDS_PLL, pval,
+				       pval & REG_RC_LVDS_PLL_PLL_EN_STAT,
+				       1000, 100000);
+	if (ret) {
+		dev_err(ctx->dev, "failed to lock PLL, ret=%i\n", ret);
+		/* On failure, disable PLL again and exit. */
+		regmap_write(ctx->regmap, REG_RC_PLL_EN, 0x00);
+		return;
+	}
 
 	/* Clear all errors that got asserted during initialization. */
 	regmap_read(ctx->regmap, REG_IRQ_STAT, &pval);
@@ -603,11 +604,9 @@ static int sn65dsi83_parse_dt(struct sn65dsi83 *ctx, enum sn65dsi83_model model)
 			ctx->lvds_dual_link_even_odd_swap = true;
 		}
 	}
-	printk("JOC panel_bridge");
 	panel_bridge = devm_drm_of_get_bridge(dev, dev->of_node, 2, 0);
 	if (IS_ERR(panel_bridge))
 		return PTR_ERR(panel_bridge);
-	printk("JOC panel_bridge loaded!!!");
 	ctx->panel_bridge = panel_bridge;
 
 	ctx->vcc = devm_regulator_get(dev, "vcc");
@@ -674,7 +673,7 @@ static int sn65dsi83_probe(struct i2c_client *client,
 	enum sn65dsi83_model model;
 	struct sn65dsi83 *ctx;
 	int ret;
-	printk("JOC!!!!");
+
 	ctx = devm_kzalloc(dev, sizeof(*ctx), GFP_KERNEL);
 	if (!ctx)
 		return -ENOMEM;
@@ -695,11 +694,9 @@ static int sn65dsi83_probe(struct i2c_client *client,
 		return dev_err_probe(dev, PTR_ERR(ctx->enable_gpio), "failed to get enable GPIO\n");
 
 	usleep_range(10000, 11000);
-	printk("JOC2!!!!");
 	ret = sn65dsi83_parse_dt(ctx, model);
 	if (ret)
 		return ret;
-	printk("JOC3!!!!");
 	ctx->regmap = devm_regmap_init_i2c(client, &sn65dsi83_regmap_config);
 	if (IS_ERR(ctx->regmap))
 		return dev_err_probe(dev, PTR_ERR(ctx->regmap), "failed to get regmap\n");
@@ -715,7 +712,6 @@ static int sn65dsi83_probe(struct i2c_client *client,
 	ret = sn65dsi83_host_attach(ctx);
 	if (ret)
 		goto err_remove_bridge;
-	printk("JOC FINAL!!!!");
 	return 0;
 
 err_remove_bridge:
