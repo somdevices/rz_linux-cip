@@ -39,6 +39,11 @@
 #define ISL1208_REG_INT 0x08
 #define ISL1208_REG_INT_ALME   (1<<6)   /* alarm enable */
 #define ISL1208_REG_INT_IM     (1<<7)   /* interrupt/alarm mode */
+#define ISL1208_REG_INT_FO_MASK   0x03
+#define ISL1208_REG_INT_FO_1HZ    0x0A
+#define ISL1208_REG_INT_FO_1KHZ   0x03
+#define ISL1208_REG_INT_FO_4KHZ   0x02
+#define ISL1208_REG_INT_FO_32KHZ  0x01
 #define ISL1219_REG_EV  0x09
 #define ISL1219_REG_EV_EVEN    (1<<4)   /* event detection enable */
 #define ISL1219_REG_EV_EVIENB  (1<<7)   /* event in pull-up disable */
@@ -293,6 +298,42 @@ isl1208_rtc_toggle_alarm(struct i2c_client *client, int enable)
 	}
 
 	return 0;
+}
+
+static int
+isl1208_set_fout(struct i2c_client *client, int freq)
+{
+	int reg;
+
+	reg = i2c_smbus_read_byte_data(client, ISL1208_REG_INT);
+	if (reg < 0)
+		return reg;
+
+	/* clear interrupt mode + freq bits */
+	reg &= ~(ISL1208_REG_INT_IM | ISL1208_REG_INT_FO_MASK);
+
+	switch (freq) {
+	case 0:
+		/* interrupt mode */
+		reg |= ISL1208_REG_INT_IM;
+		break;
+	case 1:
+		reg |= ISL1208_REG_INT_FO_1HZ;
+		break;
+	case 1024:
+		reg |= ISL1208_REG_INT_FO_1KHZ;
+		break;
+	case 4096:
+		reg |= ISL1208_REG_INT_FO_4KHZ;
+		break;
+	case 32768:
+		reg |= ISL1208_REG_INT_FO_32KHZ;
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	return i2c_smbus_write_byte_data(client, ISL1208_REG_INT, reg);
 }
 
 static int
@@ -860,6 +901,7 @@ isl1208_probe(struct i2c_client *client, const struct i2c_device_id *id)
 	int xtosb_val = 0;
 	int rc = 0;
 	int sr;
+	int fout_freq = 0;
 
 	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C))
 		return -ENODEV;
@@ -877,6 +919,12 @@ isl1208_probe(struct i2c_client *client, const struct i2c_device_id *id)
 	isl1208->config = i2c_get_match_data(client);
 	if (!isl1208->config)
 		return -ENODEV;
+
+	/* Read DT property */
+	if (client->dev.of_node)
+		of_property_read_u32(client->dev.of_node,
+				     "isil,fout-frequency",
+				     &fout_freq);
 
 	rc = isl1208_clk_present(client, "xin");
 	if (rc < 0)
@@ -914,6 +962,26 @@ isl1208_probe(struct i2c_client *client, const struct i2c_device_id *id)
 	rc = isl1208_set_xtoscb(client, sr, xtosb_val);
 	if (rc)
 		return rc;
+
+	/* Configure FOUT from device tree */
+	if (fout_freq) {
+		dev_info(&client->dev, "enabling FOUT at %d Hz\n", fout_freq);
+
+		rc = isl1208_set_fout(client, fout_freq);
+		if (rc)
+			dev_warn(&client->dev,
+				 "failed to set fout frequency %d\n",
+				 fout_freq);
+
+		/* FOUT uses INT pin so disable IRQ usage */
+		client->irq = 0;
+	} else {
+		/* default: interrupt mode */
+		rc = isl1208_set_fout(client, 0);
+		if (rc)
+			dev_warn(&client->dev,
+				 "failed to disable fout\n");
+	}
 
 	if (sr & ISL1208_REG_SR_RTCF)
 		dev_warn(&client->dev, "rtc power failure detected, "

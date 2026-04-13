@@ -56,6 +56,12 @@ properties:
         <0> : Enables internal pull-up on evin pin
         <1> : Disables internal pull-up on evin pin
 
+  isil,fout-frequency:
+    $ref: /schemas/types.yaml#/definitions/uint32
+    enum: [0, 1, 1024, 4096, 32768]
+    description: |
+      Frequency output on FOUT pin in Hz. 0 disables FOUT.
+
 required:
   - compatible
   - reg
@@ -96,5 +102,6 @@ examples:
         rtc_twi: rtc@6f {
             compatible = "isil,isl1208";
             reg = <0x6f>;
+            isil,fout-frequency = <32768>;
         };
     };

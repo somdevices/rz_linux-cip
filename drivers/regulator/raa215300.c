@@ -152,6 +152,9 @@ static int raa215300_i2c_probe(struct i2c_client *client)
 			return dev_err_probe(dev, size,
 					     "Invalid device name: %s\n", name);
 
+		/* Share PMIC device tree to RTC */
+		info.of_node = client->dev.of_node;
+
 		/* Enable RTC block */
 		regmap_update_bits(regmap, RAA215300_REG_BLOCK_EN,
 				   RAA215300_REG_BLOCK_EN_RTC_EN,
