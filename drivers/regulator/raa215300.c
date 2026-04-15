@@ -121,6 +121,7 @@ static int raa215300_i2c_probe(struct i2c_client *client)
 	if (clk_name) {
 		const char *name = pmic_version >= 0x12 ? "isl1208" : "raa215300_a0";
 		struct device_node *np = client->dev.of_node;
+		struct device_node *rtc_node = NULL;
 		u32 addr = RAA215300_RTC_DEFAULT_ADDR;
 		struct i2c_board_info info = {};
 		struct i2c_client *rtc_client;
@@ -152,8 +153,11 @@ static int raa215300_i2c_probe(struct i2c_client *client)
 			return dev_err_probe(dev, size,
 					     "Invalid device name: %s\n", name);
 
-		/* Share PMIC device tree to RTC */
-		info.of_node = client->dev.of_node;
+		/* Searching for rtc subnode */
+		rtc_node = of_get_child_by_name(client->dev.of_node, "rtc");
+		if (rtc_node) {
+			info.of_node = rtc_node;
+		}
 
 		/* Enable RTC block */
 		regmap_update_bits(regmap, RAA215300_REG_BLOCK_EN,
@@ -163,6 +167,11 @@ static int raa215300_i2c_probe(struct i2c_client *client)
 		rtc_client = i2c_new_client_device(client->adapter, &info);
 		if (IS_ERR(rtc_client))
 			return PTR_ERR(rtc_client);
+
+		if (rtc_node) {
+			/* Drop our local reference after creating the I2C client */
+			of_node_put(rtc_node);
+		}
 
 		ret = devm_add_action_or_reset(dev,
 					       raa215300_rtc_unregister_device,

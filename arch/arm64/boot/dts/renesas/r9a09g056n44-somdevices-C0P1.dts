@@ -497,7 +497,11 @@
 
 		clocks = <&x2>;
 		clock-names = "xin";
-		isil,fout-frequency = <32768>;
+
+		rtc {
+			compatible = "isil,isl1208";
+			isil,fout-frequency = <32768>;
+		};
 	};
 
 	eeprom@50 {

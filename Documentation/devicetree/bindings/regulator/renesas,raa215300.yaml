@@ -53,12 +53,16 @@ properties:
     enum:
       - xin
       - clkin
+  rtc:
+    type: object
+    description: Subnode representing the RTC IP block.
 
-  isil,fout-frequency:
-    $ref: /schemas/types.yaml#/definitions/uint32
-    enum: [0, 1, 1024, 4096, 32768]
-    description: |
-      Frequency output on FOUT pin in Hz. 0 disables FOUT.
+    properties:
+      isil,fout-frequency:
+        $ref: /schemas/types.yaml#/definitions/uint32
+        enum: [0, 1, 4096, 8192, 32768]
+        description: |
+          Frequency output on FOUT pin in Hz. 0 disables FOUT.
 
 required:
   - compatible
@@ -87,6 +91,10 @@ examples:
 
             clocks = <&x2>;
             clock-names = "xin";
-            isil,fout-frequency = <32768>;
+
+            rtc {
+                compatible = "isil,isl1208";
+                isil,fout-frequency = <32768>;
+            };
         };
     };
