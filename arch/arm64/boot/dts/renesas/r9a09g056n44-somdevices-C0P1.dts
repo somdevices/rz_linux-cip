@@ -13,14 +13,12 @@
 / {
 	model = "Renesas RZ/V2N µSMARC SOMDEVICES Board";
 	compatible = "renesas,r9a09g056n44-somdevices", "renesas,r9a09g056n44", "renesas,r9a09g056";
-
 	aliases {
 		serial0 = &scif;
 		serial1 = &sci0;
-		serial2 = &sci4;
-		serial3 = &sci5;
-		serial4 = &sci8;
-		serial5 = &sci9;
+		serial2 = &sci2;
+		serial3 = &sci3;
+		serial4 = &sci4;
 		mmc0 = &sdhi0;
 		mmc1 = &sdhi1;
 		mmc2 = &sdhi2;
@@ -163,6 +161,12 @@
 		regulator-max-microvolt = <3300000>;
 		regulator-boot-on;
 		regulator-always-on;
+	};
+
+	sdhi2_pwrseq: usdhc1_pwrseq {
+		compatible = "mmc-pwrseq-simple";
+		reset-gpios = <&pinctrl RZG2L_GPIO(1, 4) GPIO_ACTIVE_LOW>,
+			      <&pinctrl RZG2L_GPIO(2, 1) GPIO_ACTIVE_LOW>;
 	};
 
 	vccq_sdhi0: regulator-vccq-sdhi0 {
@@ -550,28 +554,28 @@
 	pinctrl-0 = <&sci0_pins>;
 	pinctrl-names = "default";
 	uart-has-rtscts;
-	status = "disabled";
+	status = "okay";
 };
 
 &sci2 {
 	pinctrl-0 = <&sci2_pins>;
 	pinctrl-names = "default";
 	uart-has-rtscts;
-	status = "disabled";
+	status = "okay";
 };
 
 &sci3 {
 	pinctrl-0 = <&sci3_pins>;
 	pinctrl-names = "default";
 	uart-has-rtscts;
-	status = "disabled";
+	status = "okay";
 };
 
 &sci4 {
 	pinctrl-0 = <&sci4_pins>;
 	pinctrl-names = "default";
 
-	status = "disabled";
+	status = "okay";
 };
 
 &sdhi0 {
@@ -602,10 +606,21 @@
 	pinctrl-names = "default";
 
 	vmmc-supply = <&reg_3p3v>;
+	vqmmc-supply = <&reg_1p8v>;
 	bus-width = <4>;
-	sd-uhs-sdr50;
-	sd-uhs-sdr104;
+	cap-power-off-card;
+	pm-ignore-notify;
+	keep-power-in-suspend;
+	non-removable;
+	mmc-pwrseq = <&sdhi2_pwrseq>;
 	status = "okay";
+
+	wifi_wake_host {
+		compatible = "nxp,wifi-wake-host";
+		interrupt-parent = <&pinctrl>;
+		interrupts = <RZG2L_GPIO(10, 5) IRQ_TYPE_LEVEL_LOW>;
+		interrupt-names = "host-wake";
+	};
 };
 
 &xspi {
