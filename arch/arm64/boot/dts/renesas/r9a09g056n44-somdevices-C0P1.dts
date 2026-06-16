@@ -166,7 +166,8 @@
 	sdhi2_pwrseq: usdhc1_pwrseq {
 		compatible = "mmc-pwrseq-simple";
 		reset-gpios = <&pinctrl RZG2L_GPIO(1, 4) GPIO_ACTIVE_LOW>,
-			      <&pinctrl RZG2L_GPIO(2, 1) GPIO_ACTIVE_LOW>;
+			      <&pinctrl RZG2L_GPIO(2, 1) GPIO_ACTIVE_LOW>,
+			      <&pinctrl RZG2L_GPIO(2, 0) GPIO_ACTIVE_LOW>;
 	};
 
 	vccq_sdhi0: regulator-vccq-sdhi0 {
@@ -294,8 +295,8 @@
 	sci2_pins: sci2 {
 		pinmux = <RZG2L_PORT_PINMUX(5, 4, 1)>, /* UART2_BT_TXD */
 			 <RZG2L_PORT_PINMUX(5, 5, 1)>, /* UART2_BT_RXD */
-			 <RZG2L_PORT_PINMUX(5, 6, 6)>, /* UART2_BT_CTS */
-			 <RZG2L_PORT_PINMUX(5, 7, 6)>; /* UART2_BT_RTS */
+			 <RZG2L_PORT_PINMUX(5, 6, 4)>, /* UART2_BT_CTS */
+			 <RZG2L_PORT_PINMUX(5, 7, 2)>; /* UART2_BT_RTS */
 	};
 
 	sci3_pins: sci3 {
