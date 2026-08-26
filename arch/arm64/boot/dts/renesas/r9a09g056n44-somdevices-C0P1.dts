@@ -103,29 +103,31 @@
 			compatible = "shared-dma-pool";
 			linux,cma-default;
 			reusable;
-			reg = <0x0 0x58000000 0x0 0x10000000>;
+			reg = <0x0 0x58000000 0x0 0x10000000>; /* 0x58000000 - 0x68000000 (256MB) */
 		};
 
 		mmp_reserved: linux,multimedia {
 			compatible = "shared-dma-pool";
 			reusable;
-			reg = <0x00000000 0x68000000 0x0 0x20000000>;
+			reg = <0x00000000 0x68000000 0x0 0x20000000>; /* 0x68000000 - 0x88000000 (512MB) */
 		};
 
-		shared_drp_reserved: SharedDRP@AFCFF000 {
+		/* Colocado justo después de multimedia */
+		shared_drp_reserved: SharedDRP@88000000 {
 			reusable;
-			reg = <0x0 0xAFCFF000 0x0 0x00001000>;
+			reg = <0x0 0x88000000 0x0 0x00001000>; /* 0x88000000 - 0x88001000 (4KB) */
 		};
 
-		drp_reserved: DRP-AI@D0000000 {
+		/* DRP-AI inicia en 0x90000000 sin colisionar con nada */
+		drp_reserved: DRP-AI@90000000 {
 			reusable;
-			reg = <0x0 0xD0000000 0x0 0x20000000>;
+			reg = <0x0 0x90000000 0x0 0x20000000>; /* 0x90000000 - 0xB0000000 (512MB) */
 		};
 
 		image_buf0: image_buf@B0000000 {
 			compatible = "shared-dma-pool";
 			reusable;
-			reg = <0x0 0xB0000000 0x0 0x4000000>;
+			reg = <0x0 0xB0000000 0x0 0x4000000>; /* 0xB0000000 - 0xB4000000 (64MB) */
 			label = "image_buf0";
 		};
 	};
