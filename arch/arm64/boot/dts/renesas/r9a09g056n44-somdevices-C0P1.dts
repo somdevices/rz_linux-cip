@@ -672,14 +672,16 @@
 	phy-handle = <&phy0>;
 	phy-mode = "rgmii-id";
 	status = "okay";
+	phy-reset-gpios = <&pinctrl RZG2L_GPIO(9, 6) GPIO_ACTIVE_LOW>;  /* PHY0_RESETN */
+	phy-reset-post-delay = <150>;
+	phy-reset-duration = <10>;
 
 	mdio {
 		#address-cells = <1>;
 		#size-cells = <0>;
-		phy0: ethernet-phy@3 {
-			compatible = "ethernet-phy-id0022.1640",
-				     "ethernet-phy-ieee802.3-c22";
-			reg = <3>;
+		phy0: ethernet-phy@1 {
+			compatible = "ethernet-phy-ieee802.3-c22";
+			reg = <1>;
 			rxc-skew-psec = <1400>;
 			txc-skew-psec = <1400>;
 			rxdv-skew-psec = <0>;
@@ -699,15 +701,17 @@
 &eth1 {
 	phy-handle = <&phy1>;
 	phy-mode = "rgmii-id";
-	status = "disabled";
+	status = "okay";
+	phy-reset-gpios = <&pinctrl RZG2L_GPIO(6, 1) GPIO_ACTIVE_LOW>;  /* PHY1_RESETN */
+	phy-reset-post-delay = <150>;
+	phy-reset-duration = <10>;
 
 	mdio {
 		#address-cells = <1>;
 		#size-cells = <0>;
-		phy1: ethernet-phy@3 {
-			compatible = "ethernet-phy-id0022.1640",
-				     "ethernet-phy-ieee802.3-c22";
-			reg = <3>;
+		phy1: ethernet-phy@2 {
+			compatible = "ethernet-phy-ieee802.3-c22";
+			reg = <2>;
 			rxc-skew-psec = <1400>;
 			txc-skew-psec = <1400>;
 			rxdv-skew-psec = <0>;
